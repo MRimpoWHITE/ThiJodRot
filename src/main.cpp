@@ -1,43 +1,86 @@
 #include <Arduino.h> // Infrared photoelectric switch Sensor E18-D80NK 
 
-int ledPin = D2;
-int analogPin = A0;
-int val = 0;
-int buzz = 2;
+const int sensorPin1 = D5;   // เซนเซอร์ขวา
+const int sensorPin2 = D5;
 
-void setup()
-{
-  pinMode(ledPin, OUTPUT);
-  pinMode(buzz, OUTPUT);
+//Led ของเซนเซอร์ ขวา
+int Rsensor1 = D4;    
+int Gsensor1 = D2;
+
+int Rsensor2 = D2;
+int Gsensor2 = D4;
+
+//กันค่ารวน
+int triggerCount1 = 0;
+int triggerCount2 = 0;
+const int triggerThreshold = 3; // ต้องเจอสัญญาณ 3 รอบติดกัน
+
+void setup() {
+  pinMode(sensorPin1, INPUT_PULLUP); // sennor ขวา
+  pinMode(sensorPin2, INPUT_PULLUP); // sennorอันแรก
+
+
+  pinMode(Rsensor1, OUTPUT);
+  pinMode(Gsensor1, OUTPUT);
+
+  //pinMode(ledPin, OUTPUT);
   Serial.begin(115200);
 }
 
-void loop()
-{
-  val = analogRead(analogPin); // อ่านค่าสัญญาณ analog ขา A0
+void loop() {
+
+  analogWrite(Rsensor1, 0);
+  analogWrite(Gsensor1, 0);
+
+  bool s1 = (digitalRead(sensorPin1) == LOW);
+  bool s2 = (digitalRead(sensorPin2) == LOW);
+
+  // digitalWrite(led1, s1 ? HIGH : LOW); // ถ้า LED ต่อแบบ anode->GPIO, cathode->GND
+  // digitalWrite(led2, s2 ? HIGH : LOW);
+
+
+  if (s1 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
+
+    triggerCount1++;
+
+    if(triggerCount1 >= triggerThreshold){
+      analogWrite(Rsensor1, 255);
+      analogWrite(Gsensor1, 0);
+      Serial.println("1.Right Senor : Detected");
+    }
+  } 
   
-  // แปลงค่าจาก analog (100–900) ไปเป็นระยะ (80–10 cm)
-  int distance = map(val, 100, 900, 80, 10);
+  else {
+    triggerCount1 = 0;
 
-  // ป้องกันค่าเกินช่วง
-  if (distance < 10) distance = 10;
-  if (distance > 80) distance = 80;
+    analogWrite(Rsensor1, 0);
+    analogWrite(Gsensor1, 255);
+    Serial.println("1.Right Senor : CLEAR");
 
-  Serial.print("Analog = ");
-  Serial.print(val);
-  Serial.print("  Distance = ");
-  Serial.print(distance);
-  Serial.println(" cm");
-
-  if (distance < 20)  // ถ้าใกล้กว่า 20 cm
-  {
-    digitalWrite(ledPin, HIGH); // LED ติด
-    digitalWrite(buzz, LOW);    // Buzzer ติด
   }
-  else
-  {
-    digitalWrite(ledPin, LOW);  // LED ดับ
-    digitalWrite(buzz, HIGH);   // Buzzer ดับ
+
+  Serial.println("====================");
+
+  if (s2 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
+
+    triggerCount2++;
+
+    if(triggerCount2 >= triggerThreshold){
+      analogWrite(Rsensor2, 255);
+      analogWrite(Gsensor2, 0);
+      Serial.println("2.Left Senor : Detected");
+    }
+  } 
+    else {
+    triggerCount2 = 0;
+
+    analogWrite(Rsensor2, 0);
+    analogWrite(Gsensor2, 255);
+    Serial.println("2.Left Senor : CLEAR");
+
   }
-  delay(100);
+
+  Serial.println("====================");
+
+  delay(1000);
 }
