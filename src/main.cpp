@@ -1,4 +1,11 @@
 #include <Arduino.h> // Infrared photoelectric switch Sensor E18-D80NK 
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
+
+ESP8266WebServer server(80);
 
 const int sensorPin1 = D5;   // เซนเซอร์ขวา
 const int sensorPin2 = D6;
@@ -22,22 +29,30 @@ void setup() {
   pinMode(Rsensor1, OUTPUT);
   pinMode(Gsensor1, OUTPUT);
 
-  // pinMode(Rsensor2, OUTPUT);
-  // pinMode(Gsensor2, OUTPUT);
+  pinMode(Rsensor2, OUTPUT);
+  pinMode(Gsensor2, OUTPUT);
 
   Serial.begin(115200);
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println(WiFi.localIP());
+
+  server.on("/", handleRoot);
+  server.begin();
+  Serial.println("HTTP server started");
 }
+
+
 
 void loop() {
 
-  // analogWrite(Rsensor1, 0);
-  // analogWrite(Gsensor1, 0);
-
   bool s1 = (digitalRead(sensorPin1) == LOW);
   bool s2 = (digitalRead(sensorPin2) == LOW);
-
-  // digitalWrite(led1, s1 ? HIGH : LOW); // ถ้า LED ต่อแบบ anode->GPIO, cathode->GND
-  // digitalWrite(led2, s2 ? HIGH : LOW);
+  
 
 
   if (s1 == LOW ) {           // เมื่อมีรถมาจอดไฟจะติด
