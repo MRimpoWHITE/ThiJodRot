@@ -8,7 +8,7 @@ const char* password = "YOUR_PASSWORD";
 ESP8266WebServer server(80);
 
 const int sensorPin1 = D5;   // เซนเซอร์ขวา
-const int sensorPin2 = D6;
+const int sensorPin2 = D5;
 
 //Led ของเซนเซอร์ ขวา
 int Rsensor1 = D1;    
@@ -32,6 +32,7 @@ void sendToAPI();
 void setup() {
   pinMode(sensorPin1, INPUT_PULLUP); // sennor ขวา
   pinMode(sensorPin2, INPUT_PULLUP); // sennorอันแรก
+
 
   pinMode(Rsensor1, OUTPUT);
   pinMode(Gsensor1, OUTPUT);
@@ -62,7 +63,7 @@ void loop() {
   
 
 
-  if (s1 == LOW ) {           // เมื่อมีรถมาจอดไฟจะติด
+  if (s1 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
 
     triggerCount1++;
 
@@ -89,8 +90,9 @@ void loop() {
     }
   }
 
+  Serial.println("====================");
 
-  if (s2 == LOW ) {           // เมื่อมีรถมาจอดไฟจะติด HIGH
+  if (s2 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
 
     triggerCount2++;
 
@@ -119,8 +121,9 @@ void loop() {
 
   }
 
+  Serial.println("====================");
 
-  delay(500);
+  delay(1000);
 }
 
 
