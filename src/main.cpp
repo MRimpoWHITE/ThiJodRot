@@ -47,52 +47,33 @@ void setup() {
 
 }
 
-
-
 void loop() {
-
-  analogWrite(Rsensor1, 0);
-  analogWrite(Gsensor1, 0);
 
   bool s1 = (digitalRead(sensorPin1) == LOW);
   bool s2 = (digitalRead(sensorPin2) == LOW);
   
 
 
-  if (s1 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
-  if (s1 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
+  if (s1 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด          
 
     triggerCount1++;
 
     if(triggerCount1 >= triggerThreshold){
       analogWrite(Rsensor1, 255);
       analogWrite(Gsensor1, 0);
-
-      if (lastState1 != true) {
-        lastState1 = true;
-        Serial.println("slot 1 Sensor : Detected");
-      }
+      Serial.println("slot 1 Sensor : Detected");
     }
-  } 
+  }
   
   else {
     triggerCount1 = 0;
     analogWrite(Rsensor1, 0);
     analogWrite(Gsensor1, 255);
-    Serial.println("1.Right Senor : CLEAR");
-
+    Serial.println("slot 1 Sensor : CLEAR");
   }
 
-  Serial.println("====================");
-    if (lastState1 != false) {
-      lastState1 = false;
-      Serial.println("slot 1 Sensor : CLEAR");
-    }
-  }
 
-  Serial.println("====================");
-
-  if (s2 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
+    
   if (s2 == HIGH ) {           // เมื่อมีรถมาจอดไฟจะติด
 
     triggerCount2++;
@@ -100,12 +81,9 @@ void loop() {
     if(triggerCount2 >= triggerThreshold){
       analogWrite(Rsensor2, 255);
       analogWrite(Gsensor2, 0);
-      Serial.println("2.Left Senor : Detected");
-      if (lastState2 != true) {
-        lastState2 = true;
-        Serial.println("slot 2 Sensor : Detected");
-        Serial.println("====================");
-      }
+      Serial.println("slot 2 Sensor : Detected");
+      Serial.println("====================");
+      
     }
   } 
     else {
@@ -113,19 +91,12 @@ void loop() {
 
     analogWrite(Rsensor2, 0);
     analogWrite(Gsensor2, 255);
-    Serial.println("2.Left Senor : CLEAR");
-    if(lastState2 != false){
-      lastState2 = false;
-    }
     Serial.println("slot 2 Sensor : CLEAR");
     Serial.println("====================");
-
-  }
-
-  Serial.println("====================");
-  Serial.println("====================");
+    }
 
   delay(1000);
 }
+
 
 
