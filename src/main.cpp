@@ -11,11 +11,11 @@ const int sensorPin1 = D5;   // เซนเซอร์ขวา
 const int sensorPin2 = D6;
 
 //Led ของเซนเซอร์ ขวา
-int Rsensor1 = D0;    
+int Rsensor1 = D1;    
 int Gsensor1 = D2;
 
 int Rsensor2 = D7;
-int Gsensor2 = D1;
+int Gsensor2 = D0;
 
 //กันค่ารวน
 int triggerCount1 = 0;
