@@ -50,15 +50,16 @@ void sendToAPI(int slot, int status) {
     http.addHeader("Content-Type", "application/json");
 
     String payload = "{\"slot\":" + String(slot) + ", \"status\":" + String(status) + "}";
-    int httpResponseCode = http.POST(payload);
+    //int httpResponseCode = 
+    http.POST(payload);
 
-    Serial.print("POST Data: ");
-    Serial.println(payload);
-    Serial.print("Response Code: ");
-    Serial.println(httpResponseCode);
+    //Serial.print("POST Data: ");
+    //Serial.println(payload);
+    //Serial.print("Response Code: ");
+    //Serial.println(httpResponseCode);
 
-    String response = http.getString();
-    Serial.println("Response Body: " + response);
+    //String response = http.getString();
+    //Serial.println("Response Body: " + response);
 
     http.end();
   }
@@ -76,7 +77,6 @@ void fetchConfig() {
 
     if (httpResponseCode == 200) {
       String response = http.getString();
-      Serial.println("==== Raw JSON ====");
       Serial.println(response);
       Serial.println("==================");
 
@@ -136,12 +136,12 @@ void setup() {
   void loop() {
 
  // ดึง config ทุก 2 วิ
-  if (millis() - lastFetch > fetchInterval) {
-    lastFetch = millis();
+  //if (millis() - lastFetch > fetchInterval) {
+   // lastFetch = millis();
     fetchConfig();
     Serial.print(override1);
     Serial.println(override2);
-  }
+ // }
 
   bool s1 = (digitalRead(sensorPin1) == HIGH);
   bool s2 = (digitalRead(sensorPin2) == HIGH);
