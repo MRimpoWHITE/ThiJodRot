@@ -4,8 +4,8 @@
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "realmec67"; 
-const char* password = "12345678";
+const char* ssid = "S1-211"; 
+const char* password = "68718224";
 
 // API
 const char* api_post = "https://thijodrot.onrender.com/api/parking";
@@ -37,7 +37,7 @@ bool override2 = false;
 
 // เวลาสุดท้ายที่ดึง config
 unsigned long lastFetch = 0;
-const unsigned long fetchInterval = 10000; // 10 วิ
+const unsigned long fetchInterval = 2000; // 1 วิ
 
 // ===== ส่ง API =====
 void sendToAPI(int slot, int status) {
@@ -76,22 +76,28 @@ void fetchConfig() {
 
     if (httpResponseCode == 200) {
       String response = http.getString();
-      Serial.println("Config Response: " + response);
+      Serial.println("==== Raw JSON ====");
+      Serial.println(response);
+      Serial.println("==================");
 
-      DynamicJsonDocument doc(256);
-      if (!deserializeJson(doc, response)) {
-        int slot   = doc["slot"];   // 1 หรือ 2
-        int status = doc["status"]; // 0=ว่าง, 1=มีรถ, 2=ซ่อม
+      JsonDocument doc;
+      DeserializationError error = deserializeJson(doc, response);
 
-        if (slot == 1) {
-          override1 = (status == 2);
-        } else if (slot == 2) {
-          override2 = (status == 2);
+      if (!error) {
+        // เพราะ server ส่งมาเป็น array
+        for (JsonObject obj : doc.as<JsonArray>()) {
+          int slot   = obj["slot"];
+          int status = obj["status"];
+
+          if (slot == 1) {
+            override1 = (status == 2);
+          } else if (slot == 2) {
+            override2 = (status == 2);
+          }
         }
-        else{
-          override1 = false;
-          override2 = false;
-        }
+      } else {
+        Serial.print("deserializeJson() failed: ");
+        Serial.println(error.c_str());
       }
     } else {
       Serial.print("Config GET failed, code: ");
@@ -101,6 +107,7 @@ void fetchConfig() {
     http.end();
   }
 }
+
 
 
 // ===== Setup =====
@@ -125,11 +132,15 @@ void setup() {
 }
 
 // ===== Loop =====
-void loop() {
-  // ดึง config ทุก 10 วิ
+ 
+  void loop() {
+
+ // ดึง config ทุก 2 วิ
   if (millis() - lastFetch > fetchInterval) {
     lastFetch = millis();
     fetchConfig();
+    Serial.print(override1);
+    Serial.println(override2);
   }
 
   bool s1 = (digitalRead(sensorPin1) == HIGH);
@@ -137,63 +148,62 @@ void loop() {
 
   // ---------- Slot 1 ----------
   if (override1) {
-    analogWrite(Rsensor1, 150);
-    analogWrite(Gsensor1, 255); // สีเหลือง
-    Serial.println("slot 1 Sensor : MAINTENANCE");
+    // ซ่อมบำรุง → เหลือง
+    analogWrite(Rsensor1, 255);
+    analogWrite(Gsensor1, 100);
   } else {
+    // ตรวจจับ
     if (s1) {
       triggerCount1++;
-      if (triggerCount1 >= triggerThreshold) {
+      if (triggerCount1 >= triggerThreshold && lastState1 == false) {
+        lastState1 = true;
+        triggerCount1 = 0; // reset กัน overshoot
         analogWrite(Rsensor1, 255);
         analogWrite(Gsensor1, 0);
-        if (lastState1 != true) {
-          lastState1 = true;
-          sendToAPI(1, 1);
-          Serial.println("slot 1 Sensor : Detected");
-        }
+        Serial.println("slot 1 Sensor : Detected");
+        sendToAPI(1, 1);
       }
     } else {
-      triggerCount1 = 0;
-      analogWrite(Rsensor1, 0);
-      analogWrite(Gsensor1, 255);
-      if (lastState1 != false) {
+      if (lastState1 == true) {
         lastState1 = false;
-        sendToAPI(1, 0);
+        triggerCount1 = 0;
+        analogWrite(Rsensor1, 0);
+        analogWrite(Gsensor1, 255);
         Serial.println("slot 1 Sensor : CLEAR");
+        sendToAPI(1, 0);
       }
     }
   }
 
   // ---------- Slot 2 ----------
   if (override2) {
-    analogWrite(Rsensor2, 150);
-    analogWrite(Gsensor2, 255); // สีเหลือง
-    Serial.println("slot 2 Sensor : MAINTENANCE");
+    // ซ่อมบำรุง → เหลือง
+    analogWrite(Rsensor2, 255);
+    analogWrite(Gsensor2, 100);
   } else {
+    // ตรวจจับ
     if (s2) {
       triggerCount2++;
-      if (triggerCount2 >= triggerThreshold) {
+      if (triggerCount2 >= triggerThreshold && lastState2 == false) {
+        lastState2 = true;
+        triggerCount2 = 0;
         analogWrite(Rsensor2, 255);
         analogWrite(Gsensor2, 0);
-        if (lastState2 != true) {
-          lastState2 = true;
-          sendToAPI(2, 1);
-          Serial.println("slot 2 Sensor : Detected");
-          Serial.println("====================");
-        }
+        Serial.println("slot 2 Sensor : Detected");
+        sendToAPI(2, 1);
       }
     } else {
-      triggerCount2 = 0;
-      analogWrite(Rsensor2, 0);
-      analogWrite(Gsensor2, 255);
-      if (lastState2 != false) {
+      if (lastState2 == true) {
         lastState2 = false;
-        sendToAPI(2, 0);
+        triggerCount2 = 0;
+        analogWrite(Rsensor2, 0);
+        analogWrite(Gsensor2, 255);
         Serial.println("slot 2 Sensor : CLEAR");
-        Serial.println("====================");
+        sendToAPI(2, 0);
       }
     }
   }
 
-  delay(200);
+  delay(50); // ลดให้ responsive มากขึ้น
 }
+
